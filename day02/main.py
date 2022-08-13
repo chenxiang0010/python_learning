@@ -10,8 +10,8 @@ rootPath = ""
 
 
 class ReNameFile:
-    def __init__(self):
-        self.spendTime()
+    def __init__(self, root_path):
+        self.spendTime(root_path)
 
     def main(self, root_path):
         if root_path == "":
@@ -101,12 +101,12 @@ class ReNameFile:
                                                      num + file_type)))
 
     # 查询耗时
-    def spendTime(self):
+    def spendTime(self, root_path):
         start = time.time()
-        self.main(rootPath)
+        self.main(root_path)
         end = time.time()
         print("所有文件重命名完成，共计耗时{}s".format(end - start))
 
 
 if __name__ == '__main__':
-    ReNameFile()
+    ReNameFile(rootPath)
