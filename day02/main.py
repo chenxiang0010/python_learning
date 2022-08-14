@@ -6,12 +6,22 @@ import random
 import time
 
 # 需要重命名文件的路径
-rootPath = ""
+parmsObj = {"root_path": "C:/Users/chenxiang/Desktop/Images/meitubz", "begin_name": "IMG"}
 
 
 class ReNameFile:
-    def __init__(self, root_path):
-        self.spendTime(root_path)
+    success_count = 0
+    fail_count = 0
+    parmsObj = {"root_path": "./", "begin_name": "default_"}
+
+    def __init__(self, *obj):
+        if len(obj):
+            parms = obj[0]
+            for parm in parms:
+                if parm in self.parmsObj.keys():
+                    self.parmsObj[parm] = parms[parm]
+            self.parmsObj["begin_name"] += "_"
+        self.spendTime()
 
     def main(self, root_path):
         if root_path == "":
@@ -30,7 +40,7 @@ class ReNameFile:
 
         for idx, item in enumerate(files_list):
             if self.isFile(root_path + item):
-                self.reNameFile(idx, root_path, item)
+                self.reNameFile(idx, root_path, item, self.parmsObj["begin_name"])
 
             if self.isDir(root_path + item):
                 print("{}目录开始重命名".format(root_path + item))
@@ -67,20 +77,19 @@ class ReNameFile:
         return os.path.exists(path)
 
     # 重命名
-    @staticmethod
-    def reNameFile(idx, file_path, file_name):
+    def reNameFile(self, idx, file_path, file_name, begin_name):
         # 判断文件后缀
         _, file_type = os.path.splitext(file_path + file_name)
         file_type_list = ['.jpg', '.png', '.jpeg', '.gif', '.HEIC']
-        # 文件开头
-        begin_name = 'default_'
-        if file_type in file_type_list:
-            begin_name = 'IMG_'
-
+        if file_type not in file_type_list:
+            print("仅支持图片类型文件，传入文件类型为 {}".format(file_type))
+            return
+            # idx小于10添0
         num = str(idx)
         if idx < 10:
             num = '0' + str(idx)
         random_str = '_'
+        # 防止文件名存在，导致重命名失败
         for idx in range(1, 6):
             random_str += str(random.randint(0, 9))
 
@@ -92,8 +101,10 @@ class ReNameFile:
                                       file_type))
         try:
             os.rename(old_file_path, new_file_path)
+            self.success_count += 1
         except OSError as err:
             print(err)
+            self.fail_count += 1
         else:
             print("Old Name:{}, New Name:{}".format(file_name,
                                                     (begin_name + time.strftime("%Y%m%d",
@@ -101,12 +112,14 @@ class ReNameFile:
                                                      num + file_type)))
 
     # 查询耗时
-    def spendTime(self, root_path):
+    def spendTime(self):
         start = time.time()
-        self.main(root_path)
+        self.main(self.parmsObj["root_path"])
         end = time.time()
-        print("所有文件重命名完成，共计耗时{}s".format(end - start))
+        print("所有文件重命名完成，共计{}个文件，成功{}个文件，失败{}个文件，共计耗时{}s".format(
+            self.success_count + self.fail_count,
+            self.success_count, self.fail_count, round(end - start, 2)))
 
 
 if __name__ == '__main__':
-    ReNameFile(rootPath)
+    ret = ReNameFile()
