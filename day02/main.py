@@ -6,13 +6,15 @@ import random
 import time
 
 # 需要重命名文件的路径
-parmsObj = {"root_path": "C:/Users/chenxiang/Desktop/Images/meitubz", "begin_name": "IMG"}
+parmsObj = {"root_path": "C:/Users/chenxiang/Desktop/Images/telegram", "begin_name": "IMG"}
+errList = []
 
 
 class ReNameFile:
     success_count = 0
     fail_count = 0
     parmsObj = {"root_path": "./", "begin_name": "default_"}
+    emptyDir = []
 
     def __init__(self, *obj):
         if len(obj):
@@ -40,7 +42,12 @@ class ReNameFile:
 
         for idx, item in enumerate(files_list):
             if self.isFile(root_path + item):
-                self.reNameFile(idx, root_path, item, self.parmsObj["begin_name"])
+                if str(open(root_path + item, mode="rb+").read()).find('nginx') != -1:
+                    os.remove(root_path + item)
+                elif item.startswith('IMG'):
+                    continue
+                else:
+                    self.reNameFile(idx, root_path, item, self.parmsObj["begin_name"])
 
             if self.isDir(root_path + item):
                 print("{}目录开始重命名".format(root_path + item))
@@ -48,11 +55,12 @@ class ReNameFile:
                 print("{}目录完成重命名".format(root_path + item))
 
     # 按修改时间返回路径下文件列表
-    @staticmethod
-    def getFileList(file_path):
+
+    def getFileList(self, file_path):
         file_list = os.listdir(file_path)
         if not file_list:
             print("当前目录，{} 没有任何文件".format(file_list))
+            self.emptyDir.append(file_path)
             return
         else:
             # 注意，这里使用lambda表达式，将文件按照最后修改时间顺序升序排列
@@ -122,4 +130,11 @@ class ReNameFile:
 
 
 if __name__ == '__main__':
-    ret = ReNameFile()
+    ret = ReNameFile(parmsObj)
+    for i in ret.emptyDir:
+        try:
+            os.rmdir(i)
+            print('删除成功')
+        except OSError as e:
+            print(str(e))
+            print('删除失败')
